@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Student Photo Viewer</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter (for Latin text) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Cairo (for Arabic text) -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Define CSS variables for glass effect and theme colors */
+        body {
+            --c-light: #fff;
+            --c-dark: #000;
+            --glass-reflex-light: 1;
+            --glass-reflex-dark: 1;
+            --c-content: #224; /* Main text color for light theme */
+            --c-action: #0052f5; /* Primary accent/button color for light theme */
+
+            font-family: 'Cairo', 'Inter', sans-serif;
+            /* Reinstated original body background gradient and pattern */
+            background: linear-gradient(to right bottom, #e0f2fe, #bfdbfe);
+            --pattern-color-light: rgba(100, 180, 255, 0.3);
+            background-image: radial-gradient(circle at 1px 1px, var(--pattern-color-light) 1px, transparent 0);
+            background-size: 20px 20px;
+            background-repeat: repeat;
+            zoom: 67%; /* Set the zoom level to 67% */
+
+        }
+
+        /* Dark mode adjustments for body gradient and glass variables */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: linear-gradient(to right bottom, #1f2937, #0f172a);
+                --c-light: #fff; /* Still use white for light reflections */
+                --c-dark: #000; /* Still use black for dark shadows */
+                --glass-reflex-dark: 2; /* More pronounced dark shadows in dark mode */
+                --glass-reflex-light: 0.3; /* Less pronounced light reflections in dark mode */
+                --c-content: #e1e1e1; /* Main text color for dark theme */
+                --c-action: #03d5ff; /* Primary accent/button color for dark theme */
+                --pattern-color-dark: rgba(74, 85, 104, 0.3);
+                background-image: radial-gradient(circle at 1px 1px, var(--pattern-color-dark) 1px, transparent 0);
+            }
+        }
+
+        /* Styles for the new ribbon background layer */
+        #ribbonBackground {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%); /* Center the ribbon */
+            width: 150vw; /* Increased width to be wider than the card */
+            height: 150vh; /* Full viewport height */
+            background-image: url('https://raw.githubusercontent.com/51PharmD/randomstd/refs/heads/main/stdsbackground.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            /* Removed border-radius */
+            z-index: 0; /* Ensures it's behind the main card (z-10) */
+            /* Removed blur filter */
+            opacity: 0.7; /* Slightly transparent to not overpower */
+            transition: opacity 0.5s ease-in-out; /* Smooth transitions */
+            animation: panBackground 30s linear infinite;
+
+        }
+
+
+@keyframes panBackground {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+
+        /* Custom button hover effect for a slight lift */
+        .btn-lift:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        /* Keyframe animation for rolling dice */
+        @keyframes roll-dice {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(90deg); }
+            50% { transform: rotate(180deg); }
+            75% { transform: rotate(270deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Class to apply the rolling animation */
+        .animate-roll {
+            animation: roll-dice 0.6s ease-out forwards;
+        }
+
+        /* Ensure the dice emoji span behaves like a block for transform */
+        #diceEmoji {
+            display: inline-block;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            font-size: 5rem;
+            line-height: 1;
+        }
+
+        /* Adjust button padding to accommodate larger emoji without making the button excessively tall */
+        #randomizeButton {
+            padding-top: 0rem;
+            padding-bottom: 0rem;
+            height: 0px;
+            line-height: 0;
+            overflow: visible; 
+            /* Remove the default focus outline */
+            outline: none; 
+        }
+
+        /* Remove the focus ring added by Tailwind's focus:ring classes */
+        #randomizeButton:focus {
+            --tw-ring-shadow: none !important;
+            box-shadow: none !important;
+        }
+
+        /* Styles for the liquid glass effect on the main card */
+        .liquid-glass-card {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            /* Adjusted background opacity for better glass effect */
+            background-color: rgba(255, 255, 255, 0.08); /* Light mode: very transparent white */
+            
+            /* Complex inset box-shadows for glass border effect, derived from provided CSS */
+            box-shadow: 
+                /* Inner light reflections */
+                inset 0 0 0 1px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 10%), transparent),
+                inset 1.8px 3px 0px -2px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 90%), transparent),
+                inset -2px -2px 0px -2px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 80%), transparent),
+                inset -3px -8px 1px -6px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 60%), transparent),
+                /* Inner dark shadows */
+                inset -0.3px -1px 4px 0px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 12%), transparent),
+                inset -1.5px 2.5px 0px -2px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 20%), transparent),
+                inset 0px 3px 4px -2px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 20%), transparent),
+                inset 2px -6.5px 1px -4px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 10%), transparent),
+                /* Outer subtle shadow */
+                0px 1px 5px 0px rgba(0, 0, 0, 0.1), 
+                0px 6px 16px 0px rgba(0, 0, 0, 0.08); 
+        }
+
+        /* Dark mode specific adjustments for the liquid glass card */
+        @media (prefers-color-scheme: dark) {
+            .liquid-glass-card {
+                background-color: rgba(31, 38, 135, 0.08); /* Dark mode: very transparent dark blue */
+                /* Box shadows will automatically use the adjusted --c-light/--c-dark/--glass-reflex values */
+                box-shadow: 
+                    /* Inner light reflections (will be less prominent due to --glass-reflex-light) */
+                    inset 0 0 0 1px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 10%), transparent),
+                    inset 1.8px 3px 0px -2px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 90%), transparent),
+                    inset -2px -2px 0px -2px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 80%), transparent),
+                    inset -3px -8px 1px -6px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 60%), transparent),
+                    /* Inner dark shadows (will be more prominent due to --glass-reflex-dark) */
+                    inset -0.3px -1px 4px 0px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 12%), transparent),
+                    inset -1.5px 2.5px 0px -2px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 20%), transparent),
+                    inset 0px 3px 4px -2px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 20%), transparent),
+                    inset 2px -6.5px 1px -4px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 10%), transparent),
+                    /* Outer subtle shadow for dark mode */
+                    0px 1px 5px 0px rgba(0, 0, 0, 0.3), 
+                    0px 6px 16px 0px rgba(0, 0, 0, 0.2); 
+            }
+        }
+
+        /* Custom text color classes */
+        .text-primary-content {
+            color: var(--c-content);
+        }
+        .text-primary-action {
+            color: var(--c-action);
+        }
+
+        /* Custom button styles using variables */
+        #randomizeButton {
+            background: linear-gradient(to right, var(--c-action), color-mix(in srgb, var(--c-action) 80%, black));
+            color: var(--c-light);
+        }
+
+        #randomizeButton:hover {
+            background: linear-gradient(to right, color-mix(in srgb, var(--c-action) 90%, black), var(--c-action));
+        }
+
+        #refreshImageButton {
+            background-color: color-mix(in srgb, var(--c-action) 95%, transparent);
+            color: var(--c-light);
+        }
+        #refreshImageButton:hover {
+            background-color: color-mix(in srgb, var(--c-action) 70%, transparent);
+        }
+
+        /* Message box button style */
+        .message-box-button {
+            background-color: var(--c-action);
+            color: var(--c-light);
+        }
+        .message-box-button:hover {
+            background-color: color-mix(in srgb, var(--c-action) 80%, black);
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <!-- Ribbon Background Layer -->
+    <div id="ribbonBackground"></div>
+
+    <!-- Main content container (card) -->
+    <div class="w-full max-w-2xl rounded-3xl p-8 text-center 
+                transform transition-all duration-300 hover:scale-[1.005] relative z-10 liquid-glass-card">
+        
+        <h1 class="text-4xl font-extrabold mb-8 tracking-tight text-primary-content">
+            Meet a Random Student!
+        </h1>
+        
+        <!-- Image display area -->
+        <div class="mb-8 relative bg-gray-100 dark:bg-gray-700 p-2 rounded-xl shadow-inner">
+            <img id="studentImage" 
+                 src="https://placehold.co/400x400/e2e8f0/4a5568?text=Click+%F0%9F%8E%B2" 
+                 alt="Student Image" 
+                 class="w-full h-auto mx-auto rounded-lg shadow-lg border border-gray-300 dark:border-gray-600" 
+                 onerror="handleImageError();">
+            
+            <!-- Refresh button, initially hidden -->
+            <button id="refreshImageButton" 
+                    class="absolute inset-0 flex flex-col items-center justify-center 
+                           text-3xl font-extrabold rounded-lg opacity-0 hover:opacity-100 
+                           transition-opacity duration-300 hidden p-4 text-shadow-lg">
+                <span class="mb-2">Image Not Found.</span>
+                <span>Click to Refresh 🔄</span>
+            </button>
+        </div>
+
+        <!-- Student Name Display -->
+        <div class="mb-10">
+            <p id="studentName" class="text-3xl font-bold text-primary-action">
+                Student Name Will Appear Here
+            </p>
+        </div>
+
+        <!-- Randomize Button -->
+        <button id="randomizeButton" 
+                class="w-full font-bold py-0 px-8 rounded-full shadow-xl hover:shadow-2xl 
+                       transition-all duration-300 transform hover:scale-105 btn-lift 
+                       focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800">
+            <span id="diceEmoji">🎲</span>
+        </button>
+
+        <div id="loadingIndicator" class="hidden mt-6 text-lg font-medium text-primary-content">Loading students...</div>
+        <div id="errorMessage" class="hidden mt-6 text-lg font-medium text-red-600"></div>
+
+    </div >
+
+    <script>
+        // Get references to the HTML elements
+        const studentImage = document.getElementById('studentImage');
+        const studentNameDisplay = document.getElementById('studentName');
+        const randomizeButton = document.getElementById('randomizeButton');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const errorMessage = document.getElementById('errorMessage');
+        const refreshImageButton = document.getElementById('refreshImageButton');
+        const diceEmoji = document.getElementById('diceEmoji');
+
+        // The URL for your Google Sheet CSV data - CORRECTED
+        const sheetCsvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSbwtJC4KdmaKQR7ykzijcLOS5RtJeFSwSypEfQiCq-zyo6g0JjLUC15MAOwsemnOTInNIfX5e8mCK7/pub?output=csv";
+        
+        let studentsData = [];
+
+        /**
+         * Custom message box function (replaces alert)
+         * @param {string} message - The message to display.
+         */
+        function displayMessageBox(message) {
+            const messageBox = document.createElement('div');
+            messageBox.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background-color: white;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                z-index: 1000;
+                text-align: center;
+                max-width: 300px;
+                font-family: 'Cairo', 'Inter', sans-serif;
+                color: #333;
+            `;
+            messageBox.innerHTML = `
+                <p class="mb-4">${message}</p>
+                <button class="message-box-button font-bold py-2 px-4 rounded-lg">OK</button>
+            `;
+            document.body.appendChild(messageBox);
+
+            messageBox.querySelector('button').addEventListener('click', () => {
+                document.body.removeChild(messageBox);
+            });
+        }
+
+        /**
+         * Function to parse CSV data into an array of objects.
+         * Assumes the first row is headers: 'std id' and 'student name'.
+         * @param {string} csvText - The raw CSV string.
+         * @returns {Array<Object>} An array of student objects.
+         */
+        function parseCSV(csvText) {
+            const lines = csvText.trim().split('\n');
+            if (lines.length === 0) return [];
+
+            const headers = lines[0].split(',').map(header => header.trim().toLowerCase());
+            const idIndex = headers.indexOf('std id');
+            const nameIndex = headers.indexOf('student name');
+
+            if (idIndex === -1 || nameIndex === -1) {
+                throw new Error("CSV must contain 'std id' and 'student name' columns.");
+            }
+
+            const students = [];
+            for (let i = 1; i < lines.length; i++) {
+                const parts = lines[i].split(',');
+                if (parts.length > Math.max(idIndex, nameIndex)) {
+                    students.push({
+                        id: parts[idIndex].trim(),
+                        name: parts[nameIndex].trim()
+                    });
+                }
+            }
+            return students;
+        }
+
+        /**
+         * Function to load student data from the provided Google Sheet URL.
+         */
+        async function loadStudents() {
+            loadingIndicator.classList.remove('hidden'); 
+            errorMessage.classList.add('hidden');
+            errorMessage.textContent = '';
+            randomizeButton.disabled = true;
+            refreshImageButton.classList.add('hidden');
+            console.log("Attempting to load student data from CSV...");
+
+            try {
+                const response = await fetch(sheetCsvUrl); 
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const csvText = await response.text();
+                studentsData = parseCSV(csvText);
+                console.log(`CSV data loaded. Found ${studentsData.length} students.`);
+                
+                if (studentsData.length === 0) {
+                    errorMessage.textContent = 'No student data found in the sheet. Please check the CSV content.';
+                    errorMessage.classList.remove('hidden');
+                } else {
+                    randomizeButton.disabled = false;
+                    displayRandomStudent();
+                }
+            } catch (error) {
+                errorMessage.textContent = `Failed to load student data: ${error.message}. This might be due to network issues, an incorrect URL, or Cross-Origin Resource Sharing (CORS) restrictions from the Google Sheet server. Please ensure the sheet is published as CSV and accessible.`;
+                errorMessage.classList.remove('hidden');
+                console.error("Error loading Google Sheet:", error);
+            } finally {
+                loadingIndicator.classList.add('hidden'); 
+            }
+        }
+
+        /**
+         * Function to display a random student's photo and name.
+         */
+        function displayRandomStudent() {
+            refreshImageButton.classList.add('hidden'); 
+            studentImage.src = 'https://placehold.co/400x400/e2e8f0/4a5568?text=Loading...';
+            studentNameDisplay.textContent = "Loading...";
+
+            if (studentsData.length === 0) {
+                displayMessageBox("No student data available. Please load students first.");
+                studentImage.src = 'https://placehold.co/400x400/e2e8f0/4a5568?text=No+Data';
+                studentNameDisplay.textContent = "No Student Data";
+                return;
+            }
+
+            const randomIndex = Math.floor(Math.random() * studentsData.length);
+            const randomStudent = studentsData[randomIndex];
+
+            const newImageUrl = `https://credit.mans.edu.eg/stuJCI?param0=stuImages.Images&param1=download&param2=${randomStudent.id}`;
+            
+            // Set the main student image source directly (as per your preference)
+            studentImage.src = newImageUrl;
+            
+            // Reverted onload/onerror for main image to original simpler form.
+            studentImage.onload = null; // Clear previous onload if any
+            studentImage.onerror = handleImageError; // Re-assign onerror
+
+            // Split the name to style the first word
+            const nameParts = randomStudent.name.split(' ');
+            let formattedName = '';
+
+            if (nameParts.length > 0) {
+                formattedName = `<span class="text-5xl font-extrabold text-shadow-lg">${nameParts[0]}</span>`;
+                if (nameParts.length > 1) {
+                    formattedName += ' ' + nameParts.slice(1).join(' ');
+                }
+            } else {
+                formattedName = randomStudent.name;
+            }
+            
+            studentNameDisplay.innerHTML = formattedName;
+
+            errorMessage.classList.add('hidden');
+            errorMessage.textContent = '';
+        }
+
+        /**
+         * Handles image loading errors.
+         * This function is called by the onerror attribute of the <img> tag.
+         */
+        function handleImageError() {
+            studentImage.src = 'https://placehold.co/400x400/e2e8f0/4a5568?text=IMAGE+NOT+FOUND'; 
+            studentNameDisplay.textContent = "بالراحة على الزرار 😡";
+            refreshImageButton.classList.remove('hidden');
+        }
+
+        // Add event listener to the randomize button
+        randomizeButton.addEventListener('click', () => {
+            diceEmoji.classList.add('animate-roll');
+            displayRandomStudent();
+        });
+
+        // Listen for the end of the animation on the dice emoji span to remove the class
+        diceEmoji.addEventListener('animationend', () => {
+            diceEmoji.classList.remove('animate-roll');
+        });
+
+        // Add event listener to the new refresh image button
+        refreshImageButton.addEventListener('click', () => {
+            displayRandomStudent(); 
+        });
+
+        // Load students when the page loads
+        window.onload = loadStudents;
+
+    </script>
+
+</body>
+</html>
