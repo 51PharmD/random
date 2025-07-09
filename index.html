@@ -65,13 +65,13 @@
             /* Removed blur filter */
             opacity: 0.7; /* Slightly transparent to not overpower */
             transition: opacity 0.5s ease-in-out; /* Smooth transitions */
-            animation: panBackground 30s linear infinite;
-
+  animation: panBackAndForth 30s ease-in-out infinite alternate;
         }
 
 
-@keyframes panBackground {
-  0% { background-position: 0% 50%; }
+/* Keyframes for back-and-forth motion */
+@keyframes panBackAndForth {
+  0%   { background-position: 0% 50%; }
   100% { background-position: 100% 50%; }
 }
 
