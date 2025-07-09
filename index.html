@@ -33,6 +33,19 @@
 
         }
 
+        /* Dark mode adjustments for body gradient and glass variables */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: linear-gradient(to right bottom, #1f2937, #0f172a);
+                --c-light: #fff; /* Still use white for light reflections */
+                --c-dark: #000; /* Still use black for dark shadows */
+                --glass-reflex-dark: 2; /* More pronounced dark shadows in dark mode */
+                --glass-reflex-light: 0.3; /* Less pronounced light reflections in dark mode */
+                --c-content: #224; /* Main text color for dark theme */
+                --c-action: #0052f5; /* Primary accent/button color for dark theme */
+                --pattern-color-dark: rgba(74, 85, 104, 0.3);
+                background-image: radial-gradient(circle at 1px 1px, var(--pattern-color-dark) 1px, transparent 0);
+            }
         }
 
         /* Styles for the new ribbon background layer */
