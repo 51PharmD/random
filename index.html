@@ -13,6 +13,54 @@
     <!-- Google Fonts: Cairo (for Arabic text) -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
+        /* Password modal styles */
+        #passwordModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        #passwordModalContent {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+        
+        #passwordInput {
+            width: 100%;
+            padding: 0.75rem;
+            margin: 1rem 0;
+            border: 2px solid #ddd;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+        }
+        
+        #passwordSubmit {
+            background-color: #0052f5;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        #passwordSubmit:hover {
+            background-color: #003dbf;
+        }
+        
+        /* Rest of your existing styles... */
         /* Define CSS variables for glass effect and theme colors */
         body {
             --c-light: #fff;
@@ -30,7 +78,6 @@
             background-size: 20px 20px;
             background-repeat: repeat;
             zoom: 67%; /* Set the zoom level to 67% */
-
         }
 
         /* Dark mode adjustments for body gradient and glass variables */
@@ -65,15 +112,14 @@
             /* Removed blur filter */
             opacity: 0.7; /* Slightly transparent to not overpower */
             transition: opacity 0.5s ease-in-out; /* Smooth transitions */
-  animation: panBackAndForth 30s ease-in-out infinite alternate;
+            animation: panBackAndForth 30s ease-in-out infinite alternate;
         }
 
-
-/* Keyframes for back-and-forth motion */
-@keyframes panBackAndForth {
-  0%   { background-position: 0% 50%; }
-  100% { background-position: 100% 50%; }
-}
+        /* Keyframes for back-and-forth motion */
+        @keyframes panBackAndForth {
+            0%   { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
 
         /* Custom button hover effect for a slight lift */
         .btn-lift:hover {
@@ -204,12 +250,23 @@
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
 
+    <!-- Password Protection Modal -->
+    <div id="passwordModal">
+        <div id="passwordModalContent">
+            <h2 class="text-2xl font-bold mb-4">Enter Password</h2>
+            <p class="mb-4">This content is password protected. Please enter the correct password to continue.</p>
+            <input type="password" id="passwordInput" placeholder="Enter password">
+            <button id="passwordSubmit">Submit</button>
+            <p id="passwordError" class="text-red-600 mt-2 hidden">Incorrect password. Please try again.</p>
+        </div>
+    </div>
+
     <!-- Ribbon Background Layer -->
-    <div id="ribbonBackground"></div>
+    <div id="ribbonBackground" class="hidden"></div>
 
     <!-- Main content container (card) -->
     <div class="w-full max-w-2xl rounded-3xl p-8 text-center 
-                transform transition-all duration-300 hover:scale-[1.005] relative z-10 liquid-glass-card">
+                transform transition-all duration-300 hover:scale-[1.005] relative z-10 liquid-glass-card hidden" id="mainContent">
         
         <h1 class="text-4xl font-extrabold mb-8 tracking-tight text-primary-content">
             Meet a Random Student!
@@ -251,9 +308,43 @@
         <div id="loadingIndicator" class="hidden mt-6 text-lg font-medium text-primary-content">Loading students...</div>
         <div id="errorMessage" class="hidden mt-6 text-lg font-medium text-red-600"></div>
 
-    </div >
+    </div>
 
     <script>
+        // Password protection
+        const passwordModal = document.getElementById('passwordModal');
+        const passwordInput = document.getElementById('passwordInput');
+        const passwordSubmit = document.getElementById('passwordSubmit');
+        const passwordError = document.getElementById('passwordError');
+        const mainContent = document.getElementById('mainContent');
+        const ribbonBackground = document.getElementById('ribbonBackground');
+        
+        // Correct password in plain text
+        const correctPassword = "meyusufalhelou";
+        
+        // Check password
+        passwordSubmit.addEventListener('click', () => {
+            const enteredPassword = passwordInput.value.toLowerCase(); // Convert to lowercase
+            
+            if (enteredPassword === correctPassword) {
+                passwordModal.style.display = 'none';
+                mainContent.classList.remove('hidden');
+                ribbonBackground.classList.remove('hidden');
+                // Load the content now that password is verified
+                loadStudents();
+            } else {
+                passwordError.classList.remove('hidden');
+                passwordInput.value = '';
+            }
+        });
+        
+        // Also allow Enter key to submit password
+        passwordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                passwordSubmit.click();
+            }
+        });
+
         // Get references to the HTML elements
         const studentImage = document.getElementById('studentImage');
         const studentNameDisplay = document.getElementById('studentName');
@@ -438,11 +529,6 @@
         refreshImageButton.addEventListener('click', () => {
             displayRandomStudent(); 
         });
-
-        // Load students when the page loads
-        window.onload = loadStudents;
-
     </script>
-
 </body>
 </html>
